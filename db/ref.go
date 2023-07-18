@@ -16,12 +16,12 @@ package db
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
 
 	"firebase.google.com/go/v4/internal"
+	jsoniter "github.com/json-iterator/go"
 )
 
 // txnRetires is the maximum number of times a transaction is retried before giving up. Transaction
@@ -47,7 +47,7 @@ type transactionNodeImpl struct {
 }
 
 func (t *transactionNodeImpl) Unmarshal(v interface{}) error {
-	return json.Unmarshal(t.Raw, v)
+	return jsoniter.Unmarshal(t.Raw, v)
 }
 
 // Parent returns a reference to the parent of the current node.
@@ -136,7 +136,7 @@ func (r *Ref) GetIfChanged(ctx context.Context, etag string, v interface{}) (boo
 		return false, etag, nil
 	}
 
-	if err := json.Unmarshal(resp.Body, v); err != nil {
+	if err := jsoniter.Unmarshal(resp.Body, v); err != nil {
 		return false, "", err
 	}
 

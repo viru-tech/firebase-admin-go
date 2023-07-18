@@ -17,7 +17,6 @@ package auth
 import (
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -27,6 +26,7 @@ import (
 	"time"
 
 	"firebase.google.com/go/v4/internal"
+	jsoniter "github.com/json-iterator/go"
 )
 
 const (
@@ -176,7 +176,7 @@ func convertMultiFactorInfoToServerFormat(mfaInfo MultiFactorInfo) (multiFactorI
 		authFactorInfo.MFAEnrollmentID = mfaInfo.UID
 		return authFactorInfo, nil
 	}
-	out, _ := json.Marshal(mfaInfo)
+	out, _ := jsoniter.Marshal(mfaInfo)
 	return multiFactorInfoResponse{}, fmt.Errorf("Unsupported second factor %s provided", string(out))
 }
 
@@ -475,7 +475,7 @@ func marshalCustomClaims(claims map[string]interface{}) (string, error) {
 		}
 	}
 
-	b, err := json.Marshal(claims)
+	b, err := jsoniter.Marshal(claims)
 	if err != nil {
 		return "", fmt.Errorf("custom claims marshaling error: %v", err)
 	}
@@ -1037,7 +1037,7 @@ func (r *userQueryResponse) makeUserRecord() (*UserRecord, error) {
 func (r *userQueryResponse) makeExportedUserRecord() (*ExportedUserRecord, error) {
 	var customClaims map[string]interface{}
 	if r.CustomAttributes != "" {
-		if err := json.Unmarshal([]byte(r.CustomAttributes), &customClaims); err != nil {
+		if err := jsoniter.Unmarshal([]byte(r.CustomAttributes), &customClaims); err != nil {
 			return nil, err
 		}
 		if len(customClaims) == 0 {
@@ -1443,7 +1443,7 @@ func parseErrorResponse(resp *internal.Response) (string, string) {
 		} `json:"error"`
 	}
 	// ignore any json parse errors at this level
-	json.Unmarshal(resp.Body, &httpErr)
+	jsoniter.Unmarshal(resp.Body, &httpErr)
 
 	// Auth error response format: {"error": {"message": "AUTH_ERROR_CODE: Optional text"}}
 	code, detail := httpErr.Error.Message, ""

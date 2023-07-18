@@ -19,7 +19,6 @@ package firebase
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"os"
@@ -32,6 +31,7 @@ import (
 	"firebase.google.com/go/v4/internal"
 	"firebase.google.com/go/v4/messaging"
 	"firebase.google.com/go/v4/storage"
+	jsoniter "github.com/json-iterator/go"
 	"google.golang.org/api/option"
 	"google.golang.org/api/transport"
 )
@@ -188,13 +188,13 @@ func getConfigDefaults() (*Config, error) {
 			return nil, err
 		}
 	}
-	if err := json.Unmarshal(dat, fbc); err != nil {
+	if err := jsoniter.Unmarshal(dat, fbc); err != nil {
 		return nil, err
 	}
 
 	// Some special handling necessary for db auth overrides
 	var m map[string]interface{}
-	if err := json.Unmarshal(dat, &m); err != nil {
+	if err := jsoniter.Unmarshal(dat, &m); err != nil {
 		return nil, err
 	}
 	if ao, ok := m["databaseAuthVariableOverride"]; ok && ao == nil {

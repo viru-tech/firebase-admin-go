@@ -17,7 +17,6 @@ package db
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -26,6 +25,7 @@ import (
 	"strings"
 
 	"firebase.google.com/go/v4/internal"
+	jsoniter "github.com/json-iterator/go"
 	"golang.org/x/oauth2"
 	"google.golang.org/api/option"
 )
@@ -74,7 +74,7 @@ func NewClient(ctx context.Context, c *internal.DatabaseConfig) (*Client, error)
 
 	var ao []byte
 	if c.AuthOverride == nil || len(c.AuthOverride) > 0 {
-		ao, err = json.Marshal(c.AuthOverride)
+		ao, err = jsoniter.Marshal(c.AuthOverride)
 		if err != nil {
 			return nil, err
 		}
@@ -148,7 +148,7 @@ func handleRTDBError(resp *internal.Response) error {
 	var p struct {
 		Error string `json:"error"`
 	}
-	json.Unmarshal(resp.Body, &p)
+	jsoniter.Unmarshal(resp.Body, &p)
 	if p.Error != "" {
 		err.String = fmt.Sprintf("http error status: %d; reason: %s", resp.Status, p.Error)
 	}

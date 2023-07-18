@@ -15,13 +15,14 @@
 package internal
 
 import (
-	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
 	"syscall"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 // ErrorCode represents the platform-wide error codes that can be raised by
@@ -141,7 +142,7 @@ func NewFirebaseErrorOnePlatform(resp *Response) *FirebaseError {
 			Message string `json:"message"`
 		} `json:"error"`
 	}
-	json.Unmarshal(resp.Body, &gcpError) // ignore any json parse errors at this level
+	jsoniter.Unmarshal(resp.Body, &gcpError) // ignore any json parse errors at this level
 	if gcpError.Error.Status != "" {
 		base.ErrorCode = ErrorCode(gcpError.Error.Status)
 	}

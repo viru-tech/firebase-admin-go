@@ -21,6 +21,8 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -51,7 +53,7 @@ func TestNewIDTokenVerifier(t *testing.T) {
 }
 
 func TestHTTPKeySource(t *testing.T) {
-	data, err := ioutil.ReadFile("../testdata/public_certs.json")
+	data, err := os.ReadFile(filepath.Join(testdataPath, "public_certs.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -68,7 +70,7 @@ func TestHTTPKeySource(t *testing.T) {
 }
 
 func TestHTTPKeySourceWithClient(t *testing.T) {
-	data, err := ioutil.ReadFile("../testdata/public_certs.json")
+	data, err := os.ReadFile(filepath.Join(testdataPath, "public_certs.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -173,7 +175,7 @@ func TestFindMaxAgeError(t *testing.T) {
 }
 
 func TestParsePublicKeys(t *testing.T) {
-	b, err := ioutil.ReadFile("../testdata/public_certs.json")
+	b, err := ioutil.ReadFile(filepath.Join(testdataPath, "public_certs.json"))
 	if err != nil {
 		t.Fatal(err)
 	}

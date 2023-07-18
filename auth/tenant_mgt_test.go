@@ -16,10 +16,10 @@ package auth
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
+	"path/filepath"
 	"reflect"
 	"sort"
 	"strconv"
@@ -28,6 +28,8 @@ import (
 	"time"
 
 	"firebase.google.com/go/v4/errorutils"
+	jsoniter "github.com/json-iterator/go"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/api/iterator"
 )
 
@@ -149,7 +151,7 @@ func TestTenantGetUserByPhoneNumber(t *testing.T) {
 }
 
 func TestTenantListUsers(t *testing.T) {
-	testListUsersResponse, err := ioutil.ReadFile("../testdata/list_users.json")
+	testListUsersResponse, err := os.ReadFile(filepath.Join(testdataPath, "list_users.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -238,7 +240,7 @@ func TestTenantCreateUser(t *testing.T) {
 			t.Errorf("createUser(%#v) = (%q, %v); want = (%q, nil)", tc.params, uid, err, "expectedUserID")
 		}
 
-		want, err := json.Marshal(tc.req)
+		want, err := jsoniter.Marshal(tc.req)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -274,14 +276,12 @@ func TestTenantUpdateUser(t *testing.T) {
 		}
 
 		tc.req["localId"] = "uid"
-		want, err := json.Marshal(tc.req)
+		want, err := jsoniter.Marshal(tc.req)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if !reflect.DeepEqual(s.Rbody, want) {
-			t.Errorf("updateUser() request = %v; want = %v", string(s.Rbody), string(want))
-		}
+		require.JSONEq(t, string(want), string(s.Rbody))
 
 		if s.Req[0].RequestURI != wantPath {
 			t.Errorf("updateUser(%#v) URL = %q; want = %q", tc.params, s.Req[0].RequestURI, wantPath)
@@ -311,7 +311,7 @@ func TestTenantRevokeRefreshTokens(t *testing.T) {
 	var req struct {
 		ValidSince string `json:"validSince"`
 	}
-	if err := json.Unmarshal(s.Rbody, &req); err != nil {
+	if err := jsoniter.Unmarshal(s.Rbody, &req); err != nil {
 		t.Fatal(err)
 	}
 
@@ -354,7 +354,7 @@ func TestTenantSetCustomUserClaims(t *testing.T) {
 		if input == nil {
 			input = map[string]interface{}{}
 		}
-		b, err := json.Marshal(input)
+		b, err := jsoniter.Marshal(input)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -363,14 +363,12 @@ func TestTenantSetCustomUserClaims(t *testing.T) {
 			"localId":          "uid",
 			"customAttributes": string(b),
 		}
-		want, err := json.Marshal(m)
+		want, err := jsoniter.Marshal(m)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if !reflect.DeepEqual(s.Rbody, want) {
-			t.Errorf("SetCustomUserClaims() = %v; want = %v", string(s.Rbody), string(want))
-		}
+		require.JSONEq(t, string(want), string(s.Rbody))
 
 		hr := s.Req[len(s.Req)-1]
 		if hr.RequestURI != wantPath {
@@ -435,7 +433,7 @@ func TestTenantImportUsersWithHash(t *testing.T) {
 	}
 
 	var got map[string]interface{}
-	if err := json.Unmarshal(s.Rbody, &got); err != nil {
+	if err := jsoniter.Unmarshal(s.Rbody, &got); err != nil {
 		t.Fatal(err)
 	}
 
@@ -1594,7 +1592,7 @@ func checkCreateTenantRequest(s *mockAuthServer, wantBody interface{}) error {
 	}
 
 	var body map[string]interface{}
-	if err := json.Unmarshal(s.Rbody, &body); err != nil {
+	if err := jsoniter.Unmarshal(s.Rbody, &body); err != nil {
 		return err
 	}
 
@@ -1624,7 +1622,7 @@ func checkUpdateTenantRequest(s *mockAuthServer, wantBody interface{}, wantMask 
 	}
 
 	var body map[string]interface{}
-	if err := json.Unmarshal(s.Rbody, &body); err != nil {
+	if err := jsoniter.Unmarshal(s.Rbody, &body); err != nil {
 		return err
 	}
 

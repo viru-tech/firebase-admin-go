@@ -22,7 +22,6 @@ import (
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
-	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
@@ -34,6 +33,7 @@ import (
 	"time"
 
 	"firebase.google.com/go/v4/internal"
+	jsoniter "github.com/json-iterator/go"
 	"google.golang.org/api/option"
 	"google.golang.org/api/transport"
 )
@@ -337,7 +337,7 @@ func decode(segment string, i interface{}) error {
 	if err != nil {
 		return err
 	}
-	return json.NewDecoder(bytes.NewBuffer(decoded)).Decode(i)
+	return jsoniter.NewDecoder(bytes.NewBuffer(decoded)).Decode(i)
 }
 
 func verifyJWTSignature(parts []string, k *publicKey) error {
@@ -444,7 +444,7 @@ func (k *httpKeySource) refreshKeys(ctx context.Context) error {
 
 func parsePublicKeys(keys []byte) ([]*publicKey, error) {
 	m := make(map[string]string)
-	err := json.Unmarshal(keys, &m)
+	err := jsoniter.Unmarshal(keys, &m)
 	if err != nil {
 		return nil, err
 	}

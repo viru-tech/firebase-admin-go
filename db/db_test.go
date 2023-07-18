@@ -16,7 +16,6 @@ package db
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -29,6 +28,7 @@ import (
 	"testing"
 
 	"firebase.google.com/go/v4/internal"
+	jsoniter "github.com/json-iterator/go"
 	"google.golang.org/api/option"
 )
 
@@ -78,7 +78,7 @@ func TestMain(m *testing.M) {
 		log.Fatalln(err)
 	}
 
-	b, err := json.Marshal(ao)
+	b, err := jsoniter.Marshal(ao)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -172,7 +172,7 @@ func TestNewClientAuthOverrides(t *testing.T) {
 			if c.hc == nil {
 				t.Errorf("NewClient(%v).hc = nil; want non-nil", tc)
 			}
-			b, err := json.Marshal(tc.Params)
+			b, err := jsoniter.Marshal(tc.Params)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -371,10 +371,10 @@ func checkRequest(t *testing.T, got, want *testReq) {
 			t.Errorf("User-Agent = %q; want = %q", h, "application/json")
 		}
 		var wi, gi interface{}
-		if err := json.Unmarshal(want.Body, &wi); err != nil {
+		if err := jsoniter.Unmarshal(want.Body, &wi); err != nil {
 			t.Fatal(err)
 		}
-		if err := json.Unmarshal(got.Body, &gi); err != nil {
+		if err := jsoniter.Unmarshal(got.Body, &gi); err != nil {
 			t.Fatal(err)
 		}
 		if !reflect.DeepEqual(gi, wi) {
@@ -445,7 +445,7 @@ func (s *mockServer) Start(c *Client) *httptest.Server {
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
-		b, _ := json.Marshal(s.Resp)
+		b, _ := jsoniter.Marshal(s.Resp)
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(b)
 	})
@@ -460,6 +460,6 @@ type person struct {
 }
 
 func serialize(v interface{}) []byte {
-	b, _ := json.Marshal(v)
+	b, _ := jsoniter.Marshal(v)
 	return b
 }

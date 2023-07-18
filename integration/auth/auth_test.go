@@ -21,7 +21,6 @@ import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"crypto/sha256"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -36,6 +35,7 @@ import (
 	"firebase.google.com/go/v4/auth"
 	"firebase.google.com/go/v4/auth/hash"
 	"firebase.google.com/go/v4/integration/internal"
+	jsoniter "github.com/json-iterator/go"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 )
@@ -259,7 +259,7 @@ func signInWithCustomTokenForTenant(token string, tenantID string) (string, erro
 		payload["tenantId"] = tenantID
 	}
 
-	req, err := json.Marshal(payload)
+	req, err := jsoniter.Marshal(payload)
 	if err != nil {
 		return "", err
 	}
@@ -271,14 +271,14 @@ func signInWithCustomTokenForTenant(token string, tenantID string) (string, erro
 	var respBody struct {
 		IDToken string `json:"idToken"`
 	}
-	if err := json.Unmarshal(resp, &respBody); err != nil {
+	if err := jsoniter.Unmarshal(resp, &respBody); err != nil {
 		return "", err
 	}
 	return respBody.IDToken, err
 }
 
 func signInWithPassword(email, password string) (string, error) {
-	req, err := json.Marshal(map[string]interface{}{
+	req, err := jsoniter.Marshal(map[string]interface{}{
 		"email":             email,
 		"password":          password,
 		"returnSecureToken": true,
@@ -294,7 +294,7 @@ func signInWithPassword(email, password string) (string, error) {
 	var respBody struct {
 		IDToken string `json:"idToken"`
 	}
-	if err := json.Unmarshal(resp, &respBody); err != nil {
+	if err := jsoniter.Unmarshal(resp, &respBody); err != nil {
 		return "", err
 	}
 	return respBody.IDToken, err

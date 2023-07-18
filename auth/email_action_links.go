@@ -16,10 +16,11 @@ package auth
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 // ActionCodeSettings specifies the required continue/state URL with optional Android and iOS settings. Used when
@@ -50,12 +51,12 @@ func (settings *ActionCodeSettings) toMap() (map[string]interface{}, error) {
 		}
 	}
 
-	b, err := json.Marshal(settings)
+	b, err := jsoniter.Marshal(settings)
 	if err != nil {
 		return nil, err
 	}
 	var result map[string]interface{}
-	if err := json.Unmarshal(b, &result); err != nil {
+	if err := jsoniter.Unmarshal(b, &result); err != nil {
 		return nil, err
 	}
 	return result, nil

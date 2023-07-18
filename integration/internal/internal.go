@@ -17,7 +17,6 @@ package internal
 
 import (
 	"context"
-	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
@@ -25,6 +24,7 @@ import (
 
 	firebase "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/internal"
+	jsoniter "github.com/json-iterator/go"
 	"google.golang.org/api/option"
 	"google.golang.org/api/transport"
 )
@@ -68,7 +68,7 @@ func ProjectID() (string, error) {
 	var serviceAccount struct {
 		ProjectID string `json:"project_id"`
 	}
-	if err := json.Unmarshal(b, &serviceAccount); err != nil {
+	if err := jsoniter.Unmarshal(b, &serviceAccount); err != nil {
 		return "", err
 	}
 	return serviceAccount.ProjectID, nil

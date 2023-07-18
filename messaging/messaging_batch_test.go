@@ -18,7 +18,6 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -29,6 +28,7 @@ import (
 	"strings"
 	"testing"
 
+	jsoniter "github.com/json-iterator/go"
 	"google.golang.org/api/option"
 )
 
@@ -1201,7 +1201,7 @@ func checkRequestPart(part *multipart.Part, dryRun bool) error {
 
 	b, _ := ioutil.ReadAll(r.Body)
 	var parsed map[string]interface{}
-	if err := json.Unmarshal(b, &parsed); err != nil {
+	if err := jsoniter.Unmarshal(b, &parsed); err != nil {
 		return err
 	}
 
@@ -1226,7 +1226,7 @@ func createMultipartResponse(success []fcmResponse, failure []string) ([]byte, e
 	writer := multipart.NewWriter(&buffer)
 	writer.SetBoundary(multipartBoundary)
 	for idx, data := range success {
-		b, err := json.Marshal(data)
+		b, err := jsoniter.Marshal(data)
 		if err != nil {
 			return nil, err
 		}

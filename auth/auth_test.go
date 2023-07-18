@@ -16,13 +16,14 @@ package auth
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"syscall"
 	"testing"
@@ -30,6 +31,7 @@ import (
 
 	"firebase.google.com/go/v4/errorutils"
 	"firebase.google.com/go/v4/internal"
+	jsoniter "github.com/json-iterator/go"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
 	"google.golang.org/api/transport"
@@ -48,13 +50,12 @@ var (
 	testGetDisabledUserResponse []byte
 	testIDToken                 string
 	testSessionCookie           string
+	testdataPath                string
 	testSigner                  cryptoSigner
 	testIDTokenVerifier         *tokenVerifier
 	testCookieVerifier          *tokenVerifier
 
-	optsWithServiceAcct = []option.ClientOption{
-		option.WithCredentialsFile("../testdata/service_account.json"),
-	}
+	optsWithServiceAcct []option.ClientOption
 	optsWithTokenSource = []option.ClientOption{
 		option.WithTokenSource(&internal.MockTokenSource{
 			AccessToken: "test.token",
@@ -64,6 +65,16 @@ var (
 )
 
 func TestMain(m *testing.M) {
+	_, currFile, _, ok := runtime.Caller(0)
+	if !ok {
+		logFatal(fmt.Errorf("failed to get current file location"))
+	}
+	testdataPath = filepath.Join(currFile, "..", "..", "testdata")
+
+	optsWithServiceAcct = []option.ClientOption{
+		option.WithCredentialsFile(filepath.Join(testdataPath, "service_account.json")),
+	}
+
 	var err error
 	testSigner, err = signerForTests(context.Background())
 	logFatal(err)
@@ -74,10 +85,10 @@ func TestMain(m *testing.M) {
 	testCookieVerifier, err = cookieVerifierForTests(context.Background())
 	logFatal(err)
 
-	testGetUserResponse, err = ioutil.ReadFile("../testdata/get_user.json")
+	testGetUserResponse, err = os.ReadFile(filepath.Join(testdataPath, "get_user.json"))
 	logFatal(err)
 
-	testGetDisabledUserResponse, err = ioutil.ReadFile("../testdata/get_disabled_user.json")
+	testGetDisabledUserResponse, err = os.ReadFile(filepath.Join(testdataPath, "get_disabled_user.json"))
 	logFatal(err)
 
 	testIDToken = getIDToken(nil)
@@ -228,7 +239,7 @@ func TestNewClientWithInvalidPrivateKey(t *testing.T) {
 		"private_key":  "not-a-private-key",
 		"client_email": "foo@bar",
 	}
-	b, err := json.Marshal(sa)
+	b, err := jsoniter.Marshal(sa)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -246,7 +257,7 @@ func TestNewClientWithInvalidPrivateKey(t *testing.T) {
 func TestNewClientAppDefaultCredentialsWithInvalidFile(t *testing.T) {
 	current := os.Getenv(credEnvVar)
 
-	if err := os.Setenv(credEnvVar, "../testdata/non_existing.json"); err != nil {
+	if err := os.Setenv(credEnvVar, filepath.Join(testdataPath, "non_existing.json")); err != nil {
 		t.Fatal(err)
 	}
 	defer os.Setenv(credEnvVar, current)
@@ -594,7 +605,7 @@ func TestVerifyIDTokenError(t *testing.T) {
 		{
 			name:  "NonStringSubject",
 			token: getIDToken(mockIDTokenPayload{"sub": 10}),
-			want:  "json: cannot unmarshal number into Go struct field Token.sub of type string",
+			want:  `auth.Token.Subject: ReadString: expects " or n, but found 1`,
 		},
 		{
 			name:  "TooLongSubject",
@@ -632,7 +643,7 @@ func TestVerifyIDTokenError(t *testing.T) {
 		{
 			name:  "MalformedToken",
 			token: "foo.bar.baz",
-			want:  "invalid character",
+			want:  "readObjectStart: expect { or n, but found ~",
 		},
 	}
 
@@ -1008,7 +1019,7 @@ func TestVerifySessionCookieError(t *testing.T) {
 		{
 			name:  "NonStringSubject",
 			token: getSessionCookie(mockIDTokenPayload{"sub": 10}),
-			want:  "json: cannot unmarshal number into Go struct field Token.sub of type string",
+			want:  `auth.Token.Subject: ReadString: expects " or n, but found 1`,
 		},
 		{
 			name:  "TooLongSubject",
@@ -1046,7 +1057,7 @@ func TestVerifySessionCookieError(t *testing.T) {
 		{
 			name:  "MalformedToken",
 			token: "foo.bar.baz",
-			want:  "invalid character",
+			want:  "readObjectStart: expect { or n, but found ~",
 		},
 	}
 
@@ -1260,7 +1271,7 @@ func idTokenVerifierForTests(ctx context.Context) (*tokenVerifier, error) {
 	if err != nil {
 		return nil, err
 	}
-	ks, err := newMockKeySource("../testdata/public_certs.json")
+	ks, err := newMockKeySource(filepath.Join(testdataPath, "public_certs.json"))
 	if err != nil {
 		return nil, err
 	}
@@ -1274,7 +1285,7 @@ func cookieVerifierForTests(ctx context.Context) (*tokenVerifier, error) {
 	if err != nil {
 		return nil, err
 	}
-	ks, err := newMockKeySource("../testdata/public_certs.json")
+	ks, err := newMockKeySource(filepath.Join(testdataPath, "public_certs.json"))
 	if err != nil {
 		return nil, err
 	}

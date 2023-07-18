@@ -17,7 +17,6 @@ package internal
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -26,6 +25,7 @@ import (
 	"strconv"
 	"time"
 
+	jsoniter "github.com/json-iterator/go"
 	"google.golang.org/api/option"
 	"google.golang.org/api/transport"
 )
@@ -166,7 +166,7 @@ func (c *HTTPClient) DoAndUnmarshal(ctx context.Context, req *Request, v interfa
 	}
 
 	if v != nil {
-		if err := json.Unmarshal(resp.Body, v); err != nil {
+		if err := jsoniter.Unmarshal(resp.Body, v); err != nil {
 			return nil, fmt.Errorf("error while parsing response: %v", err)
 		}
 	}
@@ -294,7 +294,7 @@ func NewJSONEntity(v interface{}) HTTPEntity {
 }
 
 func (e *jsonEntity) Bytes() ([]byte, error) {
-	return json.Marshal(e.Val)
+	return jsoniter.Marshal(e.Val)
 }
 
 func (e *jsonEntity) Mime() string {

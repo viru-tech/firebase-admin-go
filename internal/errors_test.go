@@ -16,7 +16,6 @@ package internal
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -26,6 +25,8 @@ import (
 	"strings"
 	"syscall"
 	"testing"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 var platformErrorCodes = []ErrorCode{
@@ -327,7 +328,7 @@ func TestErrorHTTPResponse(t *testing.T) {
 	}
 
 	var m map[string]string
-	if err := json.Unmarshal(b, &m); err != nil {
+	if err := jsoniter.Unmarshal(b, &m); err != nil {
 		t.Fatalf("Unmarshal(Response.Body) = %v", err)
 	}
 

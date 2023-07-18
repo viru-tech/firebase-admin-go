@@ -16,7 +16,6 @@ package messaging
 
 import (
 	"context"
-	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -25,6 +24,7 @@ import (
 	"testing"
 
 	"firebase.google.com/go/v4/errorutils"
+	jsoniter "github.com/json-iterator/go"
 )
 
 func TestSubscribe(t *testing.T) {
@@ -177,7 +177,7 @@ func TestTopicManagementError(t *testing.T) {
 
 func checkIIDRequest(t *testing.T, b []byte, tr *http.Request, op string) {
 	var parsed map[string]interface{}
-	if err := json.Unmarshal(b, &parsed); err != nil {
+	if err := jsoniter.Unmarshal(b, &parsed); err != nil {
 		t.Fatal(err)
 	}
 	want := map[string]interface{}{

@@ -18,7 +18,6 @@ package db
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -32,6 +31,7 @@ import (
 	"firebase.google.com/go/v4/db"
 	"firebase.google.com/go/v4/errorutils"
 	"firebase.google.com/go/v4/integration/internal"
+	jsoniter "github.com/json-iterator/go"
 )
 
 var client *db.Client
@@ -175,15 +175,15 @@ func initData() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	if err = json.Unmarshal(b, &testData); err != nil {
+	if err = jsoniter.Unmarshal(b, &testData); err != nil {
 		log.Fatalln(err)
 	}
 
-	b, err = json.Marshal(testData["dinosaurs"])
+	b, err = jsoniter.Marshal(testData["dinosaurs"])
 	if err != nil {
 		log.Fatalln(err)
 	}
-	if err = json.Unmarshal(b, &parsedTestData); err != nil {
+	if err = jsoniter.Unmarshal(b, &parsedTestData); err != nil {
 		log.Fatalln(err)
 	}
 

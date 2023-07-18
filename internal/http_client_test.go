@@ -15,7 +15,6 @@ package internal
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -25,6 +24,7 @@ import (
 	"testing"
 	"time"
 
+	jsoniter "github.com/json-iterator/go"
 	"google.golang.org/api/option"
 )
 
@@ -113,7 +113,7 @@ func TestHTTPClient(t *testing.T) {
 		"key1": "value1",
 		"key2": float64(100),
 	}
-	b, err := json.Marshal(want)
+	b, err := jsoniter.Marshal(want)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -380,7 +380,7 @@ func TestUnmarshalError(t *testing.T) {
 	data := map[string]interface{}{
 		"foo": "bar",
 	}
-	b, err := json.Marshal(data)
+	b, err := jsoniter.Marshal(data)
 	if err != nil {
 		t.Fatal(err)
 	}

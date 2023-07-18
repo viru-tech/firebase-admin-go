@@ -17,7 +17,6 @@ package snippets
 import (
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -26,6 +25,7 @@ import (
 	firebase "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/auth"
 	"firebase.google.com/go/v4/auth/hash"
+	jsoniter "github.com/json-iterator/go"
 	"google.golang.org/api/iterator"
 )
 
@@ -322,7 +322,7 @@ func customClaimsVerify(ctx context.Context, client *auth.Client) {
 	claims := token.Claims
 	if admin, ok := claims["admin"]; ok {
 		if admin.(bool) {
-			//Allow access to requested admin resource.
+			// Allow access to requested admin resource.
 		}
 	}
 	// [END verify_custom_claims_golang]
@@ -817,7 +817,7 @@ func getIDTokenFromBody(r *http.Request) (string, error) {
 	var parsedBody struct {
 		IDToken string `json:"idToken"`
 	}
-	err = json.Unmarshal(b, &parsedBody)
+	err = jsoniter.Unmarshal(b, &parsedBody)
 	return parsedBody.IDToken, err
 }
 
@@ -1467,7 +1467,7 @@ func customClaimsVerifyTenant(ctx context.Context, tenantClient *auth.TenantClie
 	claims := token.Claims
 	if admin, ok := claims["admin"]; ok {
 		if admin.(bool) {
-			//Allow access to requested admin resource.
+			// Allow access to requested admin resource.
 		}
 	}
 	// [END verify_custom_claims_tenant]

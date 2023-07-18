@@ -15,7 +15,6 @@ package auth
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -24,6 +23,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	jsoniter "github.com/json-iterator/go"
 )
 
 const projectConfigResponse = `{
@@ -127,7 +127,7 @@ func checkUpdateProjectConfigRequest(s *mockAuthServer, wantBody interface{}, wa
 	}
 
 	var body map[string]interface{}
-	if err := json.Unmarshal(s.Rbody, &body); err != nil {
+	if err := jsoniter.Unmarshal(s.Rbody, &body); err != nil {
 		return err
 	}
 
