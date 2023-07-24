@@ -16,7 +16,6 @@ package messaging
 
 import (
 	"context"
-	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -26,6 +25,7 @@ import (
 
 	"firebase.google.com/go/v4/errorutils"
 	"firebase.google.com/go/v4/internal"
+	jsoniter "github.com/json-iterator/go"
 	"google.golang.org/api/option"
 )
 
@@ -1090,12 +1090,12 @@ func TestJSONUnmarshal(t *testing.T) {
 		if tc.name == "PrefixedTopicOnly" {
 			continue
 		}
-		b, err := json.Marshal(tc.req)
+		b, err := jsoniter.Marshal(tc.req)
 		if err != nil {
 			t.Errorf("Marshal(%s) = %v; want = nil", tc.name, err)
 		}
 		var target Message
-		if err := json.Unmarshal(b, &target); err != nil {
+		if err := jsoniter.Unmarshal(b, &target); err != nil {
 			t.Errorf("Unmarshal(%s) = %v; want = nil", tc.name, err)
 		}
 		if !reflect.DeepEqual(tc.req, &target) {
@@ -1183,11 +1183,11 @@ func TestInvalidJSONUnmarshal(t *testing.T) {
 		},
 	}
 	for _, tc := range cases {
-		b, err := json.Marshal(tc.req)
+		b, err := jsoniter.Marshal(tc.req)
 		if err != nil {
 			t.Errorf("Marshal(%s) = %v; want = nil", tc.name, err)
 		}
-		if err := json.Unmarshal(b, tc.target); err == nil {
+		if err := jsoniter.Unmarshal(b, tc.target); err == nil {
 			t.Errorf("Unmarshal(%s) = %v; want = error", tc.name, err)
 		}
 	}
@@ -1332,7 +1332,7 @@ func TestInvalidMessage(t *testing.T) {
 
 func checkFCMRequest(t *testing.T, b []byte, tr *http.Request, want map[string]interface{}, dryRun bool) {
 	var parsed map[string]interface{}
-	if err := json.Unmarshal(b, &parsed); err != nil {
+	if err := jsoniter.Unmarshal(b, &parsed); err != nil {
 		t.Fatal(err)
 	}
 	if !reflect.DeepEqual(parsed["message"], want) {

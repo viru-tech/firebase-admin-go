@@ -22,7 +22,6 @@ import (
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
-	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
@@ -31,6 +30,7 @@ import (
 	"sync"
 
 	"firebase.google.com/go/v4/internal"
+	jsoniter "github.com/json-iterator/go"
 )
 
 const (
@@ -65,7 +65,7 @@ type jwtInfo struct {
 // Token encodes the data in the jwtInfo into a signed JSON web token.
 func (info *jwtInfo) Token(ctx context.Context, signer cryptoSigner) (string, error) {
 	encode := func(i interface{}) (string, error) {
-		b, err := json.Marshal(i)
+		b, err := jsoniter.Marshal(i)
 		if err != nil {
 			return "", err
 		}
@@ -110,7 +110,7 @@ var errNotAServiceAcct = errors.New("credentials json is not a service account")
 
 func signerFromCreds(creds []byte) (cryptoSigner, error) {
 	var sa serviceAccount
-	if err := json.Unmarshal(creds, &sa); err != nil {
+	if err := jsoniter.Unmarshal(creds, &sa); err != nil {
 		return nil, err
 	}
 	if sa.PrivateKey != "" && sa.ClientEmail != "" {

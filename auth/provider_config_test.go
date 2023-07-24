@@ -16,7 +16,6 @@ package auth
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -25,6 +24,7 @@ import (
 	"testing"
 
 	"firebase.google.com/go/v4/errorutils"
+	jsoniter "github.com/json-iterator/go"
 	"google.golang.org/api/iterator"
 )
 
@@ -1345,7 +1345,7 @@ func checkCreateOIDCConfigRequestWithURL(s *mockAuthServer, wantBody interface{}
 	}
 
 	var body map[string]interface{}
-	if err := json.Unmarshal(s.Rbody, &body); err != nil {
+	if err := jsoniter.Unmarshal(s.Rbody, &body); err != nil {
 		return err
 	}
 
@@ -1377,7 +1377,7 @@ func checkCreateSAMLConfigRequestWithURL(s *mockAuthServer, wantBody interface{}
 	}
 
 	var body map[string]interface{}
-	if err := json.Unmarshal(s.Rbody, &body); err != nil {
+	if err := jsoniter.Unmarshal(s.Rbody, &body); err != nil {
 		return err
 	}
 
@@ -1411,7 +1411,7 @@ func checkUpdateOIDCConfigRequestWithURL(s *mockAuthServer, wantBody interface{}
 	}
 
 	var body map[string]interface{}
-	if err := json.Unmarshal(s.Rbody, &body); err != nil {
+	if err := jsoniter.Unmarshal(s.Rbody, &body); err != nil {
 		return err
 	}
 
@@ -1445,7 +1445,7 @@ func checkUpdateSAMLConfigRequestWithURL(s *mockAuthServer, wantBody interface{}
 	}
 
 	var body map[string]interface{}
-	if err := json.Unmarshal(s.Rbody, &body); err != nil {
+	if err := jsoniter.Unmarshal(s.Rbody, &body); err != nil {
 		return err
 	}
 

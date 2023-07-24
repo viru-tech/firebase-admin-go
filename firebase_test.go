@@ -16,7 +16,6 @@ package firebase
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -30,6 +29,7 @@ import (
 	"time"
 
 	"firebase.google.com/go/v4/messaging"
+	jsoniter "github.com/json-iterator/go"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
@@ -604,12 +604,12 @@ func TestAutoInitInvalidFiles(t *testing.T) {
 		{
 			"InvalidJSON",
 			"testdata/firebase_config_invalid.json",
-			"invalid character 'b' looking for beginning of value",
+			"readObjectStart: expect { or n, but found b",
 		},
 		{
 			"EmptyFile",
 			"testdata/firebase_config_empty.json",
-			"unexpected end of JSON input",
+			"readObjectStart: expect { or n, but found \x00",
 		},
 	}
 	credOld := overwriteEnv(credEnvVar, "testdata/service_account.json")
@@ -619,7 +619,7 @@ func TestAutoInitInvalidFiles(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			overwriteEnv(firebaseEnvName, test.filename)
 			_, err := NewApp(context.Background(), nil)
-			if err == nil || err.Error() != test.wantError {
+			if err == nil || !strings.HasPrefix(err.Error(), test.wantError) {
 				t.Errorf("%s got error = %s; want = %s", test.name, err, test.wantError)
 			}
 		})
@@ -666,11 +666,11 @@ func mockServiceAcct(tokenURL string) ([]byte, error) {
 	}
 
 	var parsed map[string]interface{}
-	if err := json.Unmarshal(b, &parsed); err != nil {
+	if err := jsoniter.Unmarshal(b, &parsed); err != nil {
 		return nil, err
 	}
 	parsed["token_uri"] = tokenURL
-	return json.Marshal(parsed)
+	return jsoniter.Marshal(parsed)
 }
 
 // initMockTokenServer starts a mock HTTP server that Apps can invoke during tests to obtain

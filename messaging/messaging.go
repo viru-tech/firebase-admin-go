@@ -27,6 +27,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/json-iterator/go"
+
 	"firebase.google.com/go/v4/internal"
 	"google.golang.org/api/transport"
 )
@@ -86,7 +88,7 @@ func (m *Message) MarshalJSON() ([]byte, error) {
 		BareTopic:       strings.TrimPrefix(m.Topic, "/topics/"),
 		messageInternal: (*messageInternal)(m),
 	}
-	return json.Marshal(temp)
+	return jsoniter.Marshal(temp)
 }
 
 // UnmarshalJSON unmarshals a JSON string into a Message (for internal use only).
@@ -98,7 +100,7 @@ func (m *Message) UnmarshalJSON(b []byte) error {
 	}{
 		messageInternal: (*messageInternal)(m),
 	}
-	if err := json.Unmarshal(b, &s); err != nil {
+	if err := jsoniter.Unmarshal(b, &s); err != nil {
 		return err
 	}
 	m.Topic = s.BareTopic
@@ -138,7 +140,7 @@ func (a *AndroidConfig) MarshalJSON() ([]byte, error) {
 		TTL:             ttl,
 		androidInternal: (*androidInternal)(a),
 	}
-	return json.Marshal(temp)
+	return jsoniter.Marshal(temp)
 }
 
 // UnmarshalJSON unmarshals a JSON string into an AndroidConfig (for internal use only).
@@ -150,7 +152,7 @@ func (a *AndroidConfig) UnmarshalJSON(b []byte) error {
 	}{
 		androidInternal: (*androidInternal)(a),
 	}
-	if err := json.Unmarshal(b, &temp); err != nil {
+	if err := jsoniter.Unmarshal(b, &temp); err != nil {
 		return err
 	}
 	if temp.TTL != "" {
@@ -240,7 +242,7 @@ func (a *AndroidNotification) MarshalJSON() ([]byte, error) {
 		VibrateTimings:  vibTimings,
 		androidInternal: (*androidInternal)(a),
 	}
-	return json.Marshal(temp)
+	return jsoniter.Marshal(temp)
 }
 
 // UnmarshalJSON unmarshals a JSON string into an AndroidNotification (for internal use only).
@@ -255,7 +257,7 @@ func (a *AndroidNotification) UnmarshalJSON(b []byte) error {
 	}{
 		androidInternal: (*androidInternal)(a),
 	}
-	if err := json.Unmarshal(b, &temp); err != nil {
+	if err := jsoniter.Unmarshal(b, &temp); err != nil {
 		return err
 	}
 
@@ -378,7 +380,7 @@ func (l *LightSettings) MarshalJSON() ([]byte, error) {
 		LightOnDuration:  durationToString(time.Duration(l.LightOnDurationMillis) * time.Millisecond),
 		LightOffDuration: durationToString(time.Duration(l.LightOffDurationMillis) * time.Millisecond),
 	}
-	return json.Marshal(temp)
+	return jsoniter.Marshal(temp)
 }
 
 // UnmarshalJSON unmarshals a JSON string into an LightSettings (for internal use only).
@@ -388,7 +390,7 @@ func (l *LightSettings) UnmarshalJSON(b []byte) error {
 		LightOnDuration  string `json:"light_on_duration"`
 		LightOffDuration string `json:"light_off_duration"`
 	}{}
-	if err := json.Unmarshal(b, &temp); err != nil {
+	if err := jsoniter.Unmarshal(b, &temp); err != nil {
 		return err
 	}
 
@@ -586,18 +588,18 @@ func (n *WebpushNotification) MarshalJSON() ([]byte, error) {
 	for k, v := range n.CustomData {
 		m[k] = v
 	}
-	return json.Marshal(m)
+	return jsoniter.Marshal(m)
 }
 
 // UnmarshalJSON unmarshals a JSON string into a WebpushNotification (for internal use only).
 func (n *WebpushNotification) UnmarshalJSON(b []byte) error {
 	type webpushNotificationInternal WebpushNotification
 	var temp = (*webpushNotificationInternal)(n)
-	if err := json.Unmarshal(b, temp); err != nil {
+	if err := jsoniter.Unmarshal(b, temp); err != nil {
 		return err
 	}
 	allFields := make(map[string]interface{})
-	if err := json.Unmarshal(b, &allFields); err != nil {
+	if err := jsoniter.Unmarshal(b, &allFields); err != nil {
 		return err
 	}
 	for k := range n.standardFields() {
@@ -647,18 +649,18 @@ func (p *APNSPayload) MarshalJSON() ([]byte, error) {
 	for k, v := range p.CustomData {
 		m[k] = v
 	}
-	return json.Marshal(m)
+	return jsoniter.Marshal(m)
 }
 
 // UnmarshalJSON unmarshals a JSON string into an APNSPayload (for internal use only).
 func (p *APNSPayload) UnmarshalJSON(b []byte) error {
 	type apnsPayloadInternal APNSPayload
 	var temp = (*apnsPayloadInternal)(p)
-	if err := json.Unmarshal(b, temp); err != nil {
+	if err := jsoniter.Unmarshal(b, temp); err != nil {
 		return err
 	}
 	allFields := make(map[string]interface{})
-	if err := json.Unmarshal(b, &allFields); err != nil {
+	if err := jsoniter.Unmarshal(b, &allFields); err != nil {
 		return err
 	}
 	for k := range p.standardFields() {
@@ -724,7 +726,7 @@ func (a *Aps) MarshalJSON() ([]byte, error) {
 	for k, v := range a.CustomData {
 		m[k] = v
 	}
-	return json.Marshal(m)
+	return jsoniter.Marshal(m)
 }
 
 // UnmarshalJSON unmarshals a JSON string into an Aps (for internal use only).
@@ -739,30 +741,30 @@ func (a *Aps) UnmarshalJSON(b []byte) error {
 	}{
 		apsInternal: (*apsInternal)(a),
 	}
-	if err := json.Unmarshal(b, &temp); err != nil {
+	if err := jsoniter.Unmarshal(b, &temp); err != nil {
 		return err
 	}
 	a.ContentAvailable = (temp.ContentAvailableInt == 1)
 	a.MutableContent = (temp.MutableContentInt == 1)
 	if temp.AlertObject != nil {
-		if err := json.Unmarshal(*temp.AlertObject, &a.Alert); err != nil {
+		if err := jsoniter.Unmarshal(*temp.AlertObject, &a.Alert); err != nil {
 			a.Alert = nil
-			if err := json.Unmarshal(*temp.AlertObject, &a.AlertString); err != nil {
+			if err := jsoniter.Unmarshal(*temp.AlertObject, &a.AlertString); err != nil {
 				return fmt.Errorf("failed to unmarshal alert as a struct or a string: %v", err)
 			}
 		}
 	}
 	if temp.SoundObject != nil {
-		if err := json.Unmarshal(*temp.SoundObject, &a.CriticalSound); err != nil {
+		if err := jsoniter.Unmarshal(*temp.SoundObject, &a.CriticalSound); err != nil {
 			a.CriticalSound = nil
-			if err := json.Unmarshal(*temp.SoundObject, &a.Sound); err != nil {
+			if err := jsoniter.Unmarshal(*temp.SoundObject, &a.Sound); err != nil {
 				return fmt.Errorf("failed to unmarshal sound as a struct or a string")
 			}
 		}
 	}
 
 	allFields := make(map[string]interface{})
-	if err := json.Unmarshal(b, &allFields); err != nil {
+	if err := jsoniter.Unmarshal(b, &allFields); err != nil {
 		return err
 	}
 	for k := range a.standardFields() {
@@ -793,7 +795,7 @@ func (cs *CriticalSound) MarshalJSON() ([]byte, error) {
 	if cs.Critical {
 		temp.CriticalInt = 1
 	}
-	return json.Marshal(temp)
+	return jsoniter.Marshal(temp)
 }
 
 // UnmarshalJSON unmarshals a JSON string into a CriticalSound (for internal use only).
@@ -805,7 +807,7 @@ func (cs *CriticalSound) UnmarshalJSON(b []byte) error {
 	}{
 		criticalSoundInternal: (*criticalSoundInternal)(cs),
 	}
-	if err := json.Unmarshal(b, &temp); err != nil {
+	if err := jsoniter.Unmarshal(b, &temp); err != nil {
 		return err
 	}
 	cs.Critical = (temp.CriticalInt == 1)
@@ -1061,7 +1063,7 @@ type fcmErrorResponse struct {
 func handleFCMError(resp *internal.Response) error {
 	base := internal.NewFirebaseErrorOnePlatform(resp)
 	var fe fcmErrorResponse
-	json.Unmarshal(resp.Body, &fe) // ignore any json parse errors at this level
+	jsoniter.Unmarshal(resp.Body, &fe) // ignore any json parse errors at this level
 	for _, d := range fe.Error.Details {
 		if d.Type == "type.googleapis.com/google.firebase.fcm.v1.FcmError" {
 			base.Ext["messagingErrorCode"] = d.ErrorCode

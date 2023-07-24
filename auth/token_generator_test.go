@@ -17,17 +17,19 @@ package auth
 import (
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"firebase.google.com/go/v4/errorutils"
 	"firebase.google.com/go/v4/internal"
+	jsoniter "github.com/json-iterator/go"
 )
 
 func TestEncodeToken(t *testing.T) {
@@ -90,13 +92,13 @@ func TestEncodeInvalidPayload(t *testing.T) {
 }
 
 func TestServiceAccountSigner(t *testing.T) {
-	b, err := ioutil.ReadFile("../testdata/service_account.json")
+	b, err := os.ReadFile(filepath.Join(testdataPath, "service_account.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	var sa serviceAccount
-	if err := json.Unmarshal(b, &sa); err != nil {
+	if err := jsoniter.Unmarshal(b, &sa); err != nil {
 		t.Fatal(err)
 	}
 	signer, err := newServiceAccountSigner(sa)
@@ -331,7 +333,7 @@ func iamServer(t *testing.T, serviceAcct, signature string) *httptest.Server {
 			t.Fatal(err)
 		}
 		var m map[string]interface{}
-		if err := json.Unmarshal(reqBody, &m); err != nil {
+		if err := jsoniter.Unmarshal(reqBody, &m); err != nil {
 			t.Fatal(err)
 		}
 		if m["payload"] == "" {
@@ -342,7 +344,7 @@ func iamServer(t *testing.T, serviceAcct, signature string) *httptest.Server {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		b, err := json.Marshal(resp)
+		b, err := jsoniter.Marshal(resp)
 		if err != nil {
 			t.Fatal(err)
 		}

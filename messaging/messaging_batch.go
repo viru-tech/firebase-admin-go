@@ -18,7 +18,6 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -30,6 +29,7 @@ import (
 	"sync"
 
 	"firebase.google.com/go/v4/internal"
+	jsoniter "github.com/json-iterator/go"
 )
 
 const maxMessages = 500
@@ -428,7 +428,7 @@ func newSendResponse(part *multipart.Part) (*SendResponse, error) {
 	}
 
 	var result fcmResponse
-	if err := json.Unmarshal(b, &result); err != nil {
+	if err := jsoniter.Unmarshal(b, &result); err != nil {
 		return nil, err
 	}
 
@@ -478,7 +478,7 @@ func (p *part) writeTo(writer *multipart.Writer, idx int) error {
 }
 
 func (p *part) bytes() ([]byte, error) {
-	b, err := json.Marshal(p.body)
+	b, err := jsoniter.Marshal(p.body)
 	if err != nil {
 		return nil, err
 	}

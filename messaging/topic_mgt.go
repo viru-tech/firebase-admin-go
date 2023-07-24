@@ -16,12 +16,12 @@ package messaging
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
 
 	"firebase.google.com/go/v4/internal"
+	jsoniter "github.com/json-iterator/go"
 )
 
 const (
@@ -151,7 +151,7 @@ func (c *iidClient) makeTopicManagementRequest(ctx context.Context, req *iidRequ
 func handleIIDError(resp *internal.Response) error {
 	base := internal.NewFirebaseError(resp)
 	var ie iidErrorResponse
-	json.Unmarshal(resp.Body, &ie) // ignore any json parse errors at this level
+	jsoniter.Unmarshal(resp.Body, &ie) // ignore any json parse errors at this level
 	if ie.Error != "" {
 		base.String = fmt.Sprintf("error while calling the iid service: %s", ie.Error)
 	}

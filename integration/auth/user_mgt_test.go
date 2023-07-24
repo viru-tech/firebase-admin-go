@@ -18,7 +18,6 @@ package auth
 import (
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"math/rand"
 	"net/url"
@@ -30,6 +29,7 @@ import (
 
 	"firebase.google.com/go/v4/auth"
 	"firebase.google.com/go/v4/auth/hash"
+	jsoniter "github.com/json-iterator/go"
 	"google.golang.org/api/iterator"
 )
 
@@ -1177,7 +1177,7 @@ func resetPassword(email, oldPassword, newPassword, oobCode string) error {
 		"newPassword": newPassword,
 		"oobCode":     oobCode,
 	}
-	reqBytes, err := json.Marshal(req)
+	reqBytes, err := jsoniter.Marshal(req)
 	if err != nil {
 		return err
 	}
@@ -1191,7 +1191,7 @@ func signInWithEmailLink(email, oobCode string) (string, error) {
 		"email":   email,
 		"oobCode": oobCode,
 	}
-	reqBytes, err := json.Marshal(req)
+	reqBytes, err := jsoniter.Marshal(req)
 	if err != nil {
 		return "", err
 	}
@@ -1204,7 +1204,7 @@ func signInWithEmailLink(email, oobCode string) (string, error) {
 	var parsed struct {
 		IDToken string `json:"idToken"`
 	}
-	if err := json.Unmarshal(b, &parsed); err != nil {
+	if err := jsoniter.Unmarshal(b, &parsed); err != nil {
 		return "", err
 	}
 	return parsed.IDToken, nil

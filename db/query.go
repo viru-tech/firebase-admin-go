@@ -16,7 +16,6 @@ package db
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"sort"
@@ -24,6 +23,7 @@ import (
 	"strings"
 
 	"firebase.google.com/go/v4/internal"
+	jsoniter "github.com/json-iterator/go"
 )
 
 // QueryNode represents a data node retrieved from an ordered query.
@@ -207,7 +207,7 @@ func encodeFilter(key string, val interface{}, m map[string]string) error {
 	if val == nil {
 		return nil
 	}
-	b, err := json.Marshal(val)
+	b, err := jsoniter.Marshal(val)
 	if err != nil {
 		return err
 	}
@@ -231,7 +231,7 @@ func (p orderByChild) encode() (string, error) {
 	if len(segs) == 0 {
 		return "", fmt.Errorf("invalid child path: %q", p)
 	}
-	b, err := json.Marshal(strings.Join(segs, "/"))
+	b, err := jsoniter.Marshal(strings.Join(segs, "/"))
 	if err != nil {
 		return "", nil
 	}
@@ -241,7 +241,7 @@ func (p orderByChild) encode() (string, error) {
 type orderByProperty string
 
 func (p orderByProperty) encode() (string, error) {
-	b, err := json.Marshal(p)
+	b, err := jsoniter.Marshal(p)
 	if err != nil {
 		return "", err
 	}
@@ -313,11 +313,11 @@ func (q *queryNodeImpl) Key() string {
 }
 
 func (q *queryNodeImpl) Unmarshal(v interface{}) error {
-	b, err := json.Marshal(q.Value)
+	b, err := jsoniter.Marshal(q.Value)
 	if err != nil {
 		return err
 	}
-	return json.Unmarshal(b, v)
+	return jsoniter.Unmarshal(b, v)
 }
 
 func newQueryNode(key, val interface{}, order orderBy) *queryNodeImpl {

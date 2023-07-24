@@ -16,13 +16,13 @@ package auth
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"reflect"
 	"testing"
 
 	"firebase.google.com/go/v4/errorutils"
+	jsoniter "github.com/json-iterator/go"
 )
 
 const (
@@ -325,7 +325,7 @@ func checkActionLinkRequestWithURL(want map[string]interface{}, wantURL string, 
 	}
 
 	var got map[string]interface{}
-	if err := json.Unmarshal(s.Rbody, &got); err != nil {
+	if err := jsoniter.Unmarshal(s.Rbody, &got); err != nil {
 		return err
 	}
 	if !reflect.DeepEqual(got, want) {

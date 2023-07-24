@@ -16,13 +16,14 @@ package internal
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 const wantURL = "/test"
@@ -112,7 +113,7 @@ func TestDoAndUnmarshalPost(t *testing.T) {
 	var parsed struct {
 		Input string `json:"input"`
 	}
-	if err := json.Unmarshal(b, &parsed); err != nil {
+	if err := jsoniter.Unmarshal(b, &parsed); err != nil {
 		t.Fatal(err)
 	}
 	if parsed.Input != "test-input" {

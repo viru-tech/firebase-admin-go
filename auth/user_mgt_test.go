@@ -18,11 +18,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"reflect"
 	"sort"
 	"strconv"
@@ -32,6 +33,8 @@ import (
 
 	"firebase.google.com/go/v4/errorutils"
 	"firebase.google.com/go/v4/internal"
+	jsoniter "github.com/json-iterator/go"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/api/iterator"
 )
 
@@ -535,7 +538,7 @@ func TestGetNonExistingUser(t *testing.T) {
 }
 
 func TestListUsers(t *testing.T) {
-	testListUsersResponse, err := ioutil.ReadFile("../testdata/list_users.json")
+	testListUsersResponse, err := os.ReadFile(filepath.Join(testdataPath, "list_users.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -830,7 +833,7 @@ func TestCreateUser(t *testing.T) {
 			t.Errorf("createUser(%#v) = (%q, %v); want = (%q, nil)", tc.params, uid, err, "expectedUserID")
 		}
 
-		want, err := json.Marshal(tc.req)
+		want, err := jsoniter.Marshal(tc.req)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1148,14 +1151,12 @@ func TestUpdateUser(t *testing.T) {
 		}
 
 		tc.req["localId"] = "uid"
-		want, err := json.Marshal(tc.req)
+		want, err := jsoniter.Marshal(tc.req)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if !reflect.DeepEqual(s.Rbody, want) {
-			t.Errorf("updateUser() request = %v; want = %v", string(s.Rbody), string(want))
-		}
+		require.JSONEq(t, string(want), string(s.Rbody))
 
 		if s.Req[0].RequestURI != wantPath {
 			t.Errorf("updateUser(%#v) URL = %q; want = %q", tc.params, s.Req[0].RequestURI, wantPath)
@@ -1179,7 +1180,7 @@ func TestRevokeRefreshTokens(t *testing.T) {
 	var req struct {
 		ValidSince string `json:"validSince"`
 	}
-	if err := json.Unmarshal(s.Rbody, &req); err != nil {
+	if err := jsoniter.Unmarshal(s.Rbody, &req); err != nil {
 		t.Fatal(err)
 	}
 
@@ -1223,7 +1224,7 @@ func TestInvalidSetCustomClaims(t *testing.T) {
 		},
 		{
 			map[string]interface{}{"a": func() {}},
-			"custom claims marshaling error: json: unsupported type: func()",
+			"custom claims marshaling error: func() is unsupported type",
 		},
 	}
 
@@ -1278,7 +1279,9 @@ func TestSetCustomUserClaims(t *testing.T) {
 		if input == nil {
 			input = map[string]interface{}{}
 		}
-		b, err := json.Marshal(input)
+
+		// need to sort keys here b/c require.JSONEq doesn't respect inner object's order
+		b, err := jsoniter.ConfigCompatibleWithStandardLibrary.Marshal(input)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -1287,14 +1290,12 @@ func TestSetCustomUserClaims(t *testing.T) {
 			"localId":          "uid",
 			"customAttributes": string(b),
 		}
-		want, err := json.Marshal(m)
+		want, err := jsoniter.Marshal(m)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if !reflect.DeepEqual(s.Rbody, want) {
-			t.Errorf("SetCustomUserClaims() = %v; want = %v", string(s.Rbody), string(want))
-		}
+		require.JSONEq(t, string(want), string(s.Rbody))
 
 		hr := s.Req[len(s.Req)-1]
 		if hr.RequestURI != wantPath {
@@ -1343,13 +1344,13 @@ func TestUserProvider(t *testing.T) {
 	}
 
 	for idx, tc := range cases {
-		b, err := json.Marshal(tc.provider)
+		b, err := jsoniter.Marshal(tc.provider)
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		var got map[string]interface{}
-		if err := json.Unmarshal(b, &got); err != nil {
+		if err := jsoniter.Unmarshal(b, &got); err != nil {
 			t.Fatal(err)
 		}
 
@@ -1686,7 +1687,7 @@ func TestImportUsersWithHash(t *testing.T) {
 	}
 
 	var got map[string]interface{}
-	if err := json.Unmarshal(s.Rbody, &got); err != nil {
+	if err := jsoniter.Unmarshal(s.Rbody, &got); err != nil {
 		t.Fatal(err)
 	}
 
@@ -1979,7 +1980,7 @@ func TestSessionCookie(t *testing.T) {
 		}
 
 		var got map[string]interface{}
-		if err := json.Unmarshal(s.Rbody, &got); err != nil {
+		if err := jsoniter.Unmarshal(s.Rbody, &got); err != nil {
 			t.Fatal(err)
 		}
 		want := map[string]interface{}{
@@ -2235,7 +2236,7 @@ func echoServer(resp interface{}, t *testing.T) *mockAuthServer {
 	case []byte:
 		b = v
 	default:
-		if b, err = json.Marshal(resp); err != nil {
+		if b, err = jsoniter.Marshal(resp); err != nil {
 			t.Fatal("marshaling error")
 		}
 	}
